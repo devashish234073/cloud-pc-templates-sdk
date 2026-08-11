@@ -1,0 +1,191 @@
+let registry = [
+    {
+        "id": "playwright connector",
+        "name": "Playwright Connector",
+        "currentVersion": "1.0",
+        "port": 3036,
+        "risky": true,
+        "risk": "This agent can run arbitrary Playwright code, so use it at your own risk as if the llm can send risky code, the api will execute it. When exploring website which has prompt injection it can be able to run un-intended code.",
+        "description": "Use this when you need to automate web browser interactions, test web applications, scrape dynamic content from JavaScript-heavy websites, fill forms, click elements, extract data from web pages, or interact with complex UIs. Ideal for end-to-end testing and web scraping tasks.",
+        "stepsToInstall": "To start: run npm install && npx playwright install chromium && npm start.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/rawPlaywrightConnector.zip",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/rawPlaywrightConnector-API.md",
+        "healthCheckUrl": "http://localhost:3036/health",
+        "fileName": "rawPlaywrightConnector.zip"
+    },
+    {
+        "id": "mysql connector",
+        "name": "MySQL Connector",
+        "currentVersion": "8.0",
+        "port": 3037,
+        "risky": true,
+        "risk": "This agent can run arbitrary sql code, so use it at your own risk as if the llm can send risky sql, the api will execute it. When exploring website which has prompt injection it can be able to run un-intended queries.",
+        "description": "Use this when you need to execute SQL queries, read or write data to a MySQL database, check database status, or perform database operations. Essential for tasks involving data persistence, retrieval, or manipulation from a local MySQL database.",
+        "stepsToInstall": "To start: download the zip unzip it and then inside the folder run npm install and npm start. Note: only on first api call to this agent db setup will be done which takes time.\nTo manually trigger the setup before hand by first starting the agent and then you can directly open this 'http://localhost:3037/mysql/setup-or-status' in browser.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/sqlConnector.zip",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/sqlConnector-API.md",
+        "healthCheckUrl": "http://localhost:3037/health",
+        "insightUrl": "http://localhost:3037/mysql/query-metrics",
+        "setupUrl": "http://localhost:3037/mysql/setup-or-status",
+        "fileName": "sqlConnector.zip"
+    },
+    {
+        "id": "java-maven-spring connector",
+        "name": "Java Maven Spring Connector",
+        "currentVersion": "6.0",
+        "port": 3038,
+        "risky": true,
+        "risk": "This agent can write arbitrary java code based on your ask, so use it at your own risk as if the llm can send risky code, the api will execute it. When exploring website which has prompt injection it can be able to run un-intended code.",
+        "description": "Use this when you need to create Java Maven projects, generate Spring Boot applications, manage project dependencies, compile and execute Java code, or work with Spring framework applications. Also supports creating, reading, and modifying configuration files in src/main/resources. Essential for Java backend development tasks.",
+        "stepsToInstall": "To start: download the js then start it with node <filename>.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/javaMavenSpringConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/javaMavenSpringConnector-API.md",
+        "healthCheckUrl": "http://localhost:3038/health",
+        "fileName": "javaMavenSpringConnector.txt"
+    },
+    {
+        "id": "angular connector",
+        "name": "Angular Connector",
+        "currentVersion": "3.1",
+        "port": 3034,
+        "description": "Use this when you need to build Angular frontend applications, create or modify components (TypeScript, HTML, CSS), set up routing, or develop with Angular framework. Ideal for frontend UI development and Angular-specific development tasks.",
+        "stepsToInstall": "To run first create an empty angular project in your machine by running 'ng new testApp'\nand then inside that testApp folder place this connector file and run it with\nnode <filename>",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/angularConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/angularConnector-API.md",
+        "healthCheckUrl": "http://localhost:3034/health",
+        "fileName": "angularConnector.txt"
+    },
+    {
+        "id": "http-request-connector",
+        "name": "HTTP Request Connector",
+        "currentVersion": "1.0",
+        "port": 3039,
+        "risky": false,
+        "description": "Use this when you need to call any HTTP or HTTPS endpoint directly — test a locally running Spring Boot or Node app, hit a REST API, verify a JSON response, poll a health check until a service is up, or run a sequence of API calls in order. Acts as a programmatic curl for the orchestrator. Supports single requests, sequential batches (up to 20), and parallel reachability probes (up to 10 URLs). Does not require a browser.",
+        "stepsToInstall": "No npm install needed. Start directly with: node httpRequestConnector.js",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/httpRequestConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/httpRequestConnector-API.md",
+        "healthCheckUrl": "http://localhost:3039/health",
+        "fileName": "httpRequestConnector.txt"
+    },
+    {
+        "id": "web-explorer",
+        "name": "Web Explorer",
+        "currentVersion": "2.0",
+        "port": 3031,
+        "description": "Use this when you need to search the web, find external information, or look up documentation and answers online. Useful for gathering real-time information, finding best practices, and accessing external resources beyond local codebase.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/webExplorerConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/webExplorerConnector-API.md",
+        "healthCheckUrl": "http://localhost:3031/health",
+        "fileName": "webExplorerConnector.txt"
+    },
+    {
+        "id": "cve-search-connector",
+        "name": "CVE Search Connector",
+        "currentVersion": "1.0",
+        "port": 3040,
+        "risky": false,
+        "risk": "This agent queries the public NVD (National Vulnerability Database) API which is read-only. No code execution or write operations are performed. All data is publicly available CVE information.",
+        "description": "Use this when you need to search for vulnerability information by CVE ID, check CVSS scores, find affected software versions, view CWE classifications, or get detailed vulnerability descriptions. Essential for security research, vulnerability assessment, and understanding software vulnerabilities.",
+        "stepsToInstall": "No npm install needed. Start directly with: node cveSearchConnector.js",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/cveSearchConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/cveSearchConnector-API.md",
+        "healthCheckUrl": "http://localhost:3040/health",
+        "fileName": "cveSearchConnector.txt"
+    },
+    {
+        "id": "file-explorer",
+        "name": "File Explorer",
+        "currentVersion": "1.0",
+        "port": 3030,
+        "description": "Use this when you need to search for files by name or extension, search for specific text content within files, read file contents, or explore the project file structure. Essential for code analysis, file discovery, and codebase exploration tasks. Note: This doesn't allow file search across entire system, it is limited to the directory where the agent is running and its sub-directories for security reasons.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/fileExplorerConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/fileExplorerConnector-API.md",
+        "healthCheckUrl": "http://localhost:3030/health",
+        "fileName": "fileExplorerConnector.txt"
+    },
+    {
+        "id": "tools-explorer",
+        "name": "Tools Explorer",
+        "currentVersion": "3.0",
+        "port": 3032,
+        "description": "Use this when you need to check if development tools are installed on the system or verify their versions (Java, Maven, Node, npm, Python, etc.). Helpful for environment setup verification and prerequisite checks before running build or deployment tasks.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/toolsExplorerConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/toolsExplorerConnector-API.md",
+        "healthCheckUrl": "http://localhost:3032/health",
+        "fileName": "toolsExplorerConnector.txt"
+    },
+    {
+        "id": "git-explorer",
+        "name": "GIt Explorer",
+        "currentVersion": "3.0",
+        "port": 3033,
+        "description": "Use this when you need to clone Git repositories, list and explore existing repositories, search source code within repositories, or manage version control operations. Ideal for discovering codebases, searching across projects, and performing git-related tasks.",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/gitExplorerConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/gitExplorerConnector-API.md",
+        "healthCheckUrl": "http://localhost:3033/health",
+        "fileName": "gitExplorerConnector.txt"
+    },
+    {
+        "id": "selenium connector",
+        "name": "Selenium Connector",
+        "currentVersion": "3.0",
+        "port": 3035,
+        "risky": true,
+        "risk": "This agent can run arbitrary selenium code, so use it at your own risk as if the llm can send risky code, the api will execute it. When exploring website which has prompt injection it can be able to run un-intended code.",
+        "description": "Use this when you need to automate web browser interactions, test web applications, or interact with web elements using Selenium WebDriver. Similar to Playwright but with different API; suitable for cross-browser automation, legacy browser compatibility, and complex browser automation scenarios.",
+        "stepsToInstall": "To start the script first unzip it, then inside the directory run npm install and then run npm start",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/rawSeleniumConnector.zip",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/rawSeleniumConnector-API.md",
+        "healthCheckUrl": "http://localhost:3035/health",
+        "fileName": "rawSeleniumConnector.zip"
+    },
+    {
+        "id": "nodejs-connector",
+        "name": "Node.js Connector",
+        "currentVersion": "1.0",
+        "port": 3041,
+        "risky": true,
+        "risk": "This agent can run arbitrary commands in project directories and install npm packages, so use it at your own risk as the LLM can send risky commands.",
+        "description": "Use this when you need to create Node.js projects (Express API or standalone), manage npm dependencies, create and edit source files, run and stop Node.js applications, or execute npm commands. Supports full project lifecycle from scaffolding to running. Essential for Node.js backend and utility development tasks.",
+        "stepsToInstall": "No npm install needed. Start directly with: node nodejsConnector.js",
+        "url": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/nodejsConnector.js",
+        "apiDocUrl": "https://raw.githubusercontent.com/devashish234073/cloud-pc-templates-marketplace/refs/heads/main/JS-AGENTS/nodejsConnector-API.md",
+        "healthCheckUrl": "http://localhost:3041/health",
+        "fileName": "nodejsConnector.txt"
+    }
+];
+
+let registryMap = Object.fromEntries(registry.map(item => [item.id, item]));
+
+export class Agents {
+    host;
+    id;
+    constructor(host, id) {
+        if(!registryMap[id]) {
+            throw new Error("Invalid agent id: " + id + ". Available agents: " + Object.keys(registryMap).join(", "));
+        }
+        this.host = host;
+        this.id = id;
+    }
+    getDetails() {
+        return registryMap[this.id];
+    }
+    async login() {
+        let healthUrl = this.host + ":" + this.getDetails().port + "/health";
+
+        const response = await fetch(healthUrl);
+
+        if (response.status !== 200) {
+            return false;
+        }
+
+        const data = await response.json();
+
+        if (data.status === "UP") {
+            return true;
+        }
+
+        return false;
+    }
+}
