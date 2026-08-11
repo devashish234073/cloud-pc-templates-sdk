@@ -195,8 +195,14 @@ class Agent {
     }
 
     async getApiDoc() {
-        let apiDocUrl = this.host + ":" + this.getDetails().port + "/health";
+        let apiDocUrl = this.host + ":" + this.getDetails().port + "/apidoc";
         const response = await fetch(apiDocUrl);
+        return await response.text();
+    }
+
+    async getApiHitInsights() {
+        let insightsUrl = this.host + ":" + this.getDetails().port + "/insights";
+        const response = await fetch(insightsUrl);
         return await response.text();
     }
 }
