@@ -36,3 +36,34 @@ async function main() {
 main();
 ```
 ### The second argument for sdk.chat() is model id passing that null takes the first model from the list of model returned by the login mode.
+
+
+## For vector db use below steps 
+
+1. Start vector db
+```
+npx cloud-pc-templates@latest ai agents startVectorDb
+```
+2. Create new app add dependency 
+```
+mkdir new-app
+cd new-app
+npm init -y
+npm install cloud-pc-templates-sdk
+```
+3. create index.js with below content
+```javascript
+let { Sdk }  = require("cloud-pc-templates-sdk");
+async function main() {
+    let sdk = new Sdk("ollamalocal");
+    let response1 = await sdk.getVectorDbApiDocSuggestion("Create a java application");
+    console.log("vector db suggestion",response1);
+    let response2 = await sdk.getVectorDbApiDocSuggestion("Create a java application","text");
+    console.log("vector db suggestion text",response2);
+}
+main();
+``` 
+4. Launch index.js
+```
+node index.js
+```

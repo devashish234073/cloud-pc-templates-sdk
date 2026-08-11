@@ -44,11 +44,11 @@ export class VectorDB {
     }
 }
 
-async function test() {
+/*async function test() {
     let vectorDb = new VectorDB();
     let response = await vectorDb.getSuggestion("Create a java maven project..");
     console.log("VectorDB response: ", response);
     let responseText = await vectorDb.getSuggestion("Create a java maven project..","text");
     console.log("VectorDB response text: ", responseText);
 }
-test();
+test();*/

@@ -1,13 +1,20 @@
 import { LoginMode } from "./loginMode.mjs";
 import { Logger } from "./logger.mjs";
+import { VectorDB } from "./vectordb.mjs";
 
 export class Sdk {
     logger = new Logger("Sdk");
     loginMode;
     messageHistory = [];
     selectedModel = null;
+    vectorDb;
     constructor(loginModeId, host = "http://localhost") {
         this.loginMode = new LoginMode(host, loginModeId);
+        this.vectorDb = new VectorDB(host);
+    }
+
+    async getVectorDbApiDocSuggestion(prompt, attribute = null) {
+        return await this.vectorDb.getSuggestion(prompt, attribute);
     }
 
     async listModels() {
