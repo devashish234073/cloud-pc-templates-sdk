@@ -16,7 +16,7 @@ npm install cloud-pc-templates-sdk
 ```
 3. Then implement the code in index.js
 ```javascript
-let { Sdk }  = require("cloud-pc-templates-sdk/sdk.mjs");
+let { Sdk }  = require("cloud-pc-templates-sdk");
 async function main() {
     let sdk = new Sdk("ollamalocal");
     let response = await sdk.chat("Hello");
@@ -26,7 +26,7 @@ main();
 ```
   or for streaming
 ```javascript
-let { Sdk }  = require("cloud-pc-templates-sdk/sdk.mjs");
+let { Sdk }  = require("cloud-pc-templates-sdk");
 async function main() {
     let sdk = new Sdk("ollamalocal");
     await sdk.chat("Hello",null,(token) => {
