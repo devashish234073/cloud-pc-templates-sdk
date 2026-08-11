@@ -1,3 +1,4 @@
+import { Logger } from "./logger.mjs";
 let registry = [
     {
         "id": "playwright connector",
@@ -158,19 +159,23 @@ let registry = [
 
 let registryMap = Object.fromEntries(registry.map(item => [item.id, item]));
 
-export class Agents {
+class Agent {
     host;
     id;
+    logger;
     constructor(host, id) {
-        if(!registryMap[id]) {
+        this.logger = new Logger("Agent-"+id);
+        if (!registryMap[id]) {
             throw new Error("Invalid agent id: " + id + ". Available agents: " + Object.keys(registryMap).join(", "));
         }
         this.host = host;
         this.id = id;
     }
+
     getDetails() {
         return registryMap[this.id];
     }
+
     async login() {
         let healthUrl = this.host + ":" + this.getDetails().port + "/health";
 
@@ -187,5 +192,47 @@ export class Agents {
         }
 
         return false;
+    }
+
+    async getApiDoc() {
+        let apiDocUrl = this.host + ":" + this.getDetails().port + "/health";
+        const response = await fetch(apiDocUrl);
+        return await response.text();
+    }
+}
+
+export class Agents {
+    agentsMap = {};
+    logger = new Logger("AllAgents");
+    constructor(host) {
+        for (let agentId in registryMap) {
+            this.agentsMap[agentId] = new Agent(host, agentId);
+        }
+    }
+
+    getAgentById(agentId) {
+        return this.agentsMap[agentId];
+    }
+
+    async getApiDoc(agentId) {
+        let agent = this.agentsMap[agentId];
+        return await agent.getApiDoc();
+    }
+
+    async healthcheck(agentId) {
+        if (!agentId) {//healthcheck all agents
+            const agentIds = Object.keys(registryMap);
+            const results = await Promise.all(
+                agentIds.map(agentId => this.agentsMap[agentId].login())
+            );
+            return Object.fromEntries(
+                agentIds.map((agentId, i) => [agentId, results[i]])
+            );
+        }
+        let agent = this.agentsMap[agentId];
+        if(!agent) {
+            this.logger.error(`No agent with agent id ${agentId} available.`);
+        }
+        return await agent.login();
     }
 }

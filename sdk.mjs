@@ -1,6 +1,7 @@
 import { LoginMode } from "./loginMode.mjs";
 import { Logger } from "./logger.mjs";
 import { VectorDB } from "./vectordb.mjs";
+import { Agents } from "./agents.mjs";
 
 export class Sdk {
     logger = new Logger("Sdk");
@@ -8,13 +9,23 @@ export class Sdk {
     messageHistory = [];
     selectedModel = null;
     vectorDb;
+    agents;
     constructor(loginModeId, host = "http://localhost") {
         this.loginMode = new LoginMode(host, loginModeId);
         this.vectorDb = new VectorDB(host);
+        this.agents = new Agents(host);
     }
 
     async getVectorDbApiDocSuggestion(prompt, attribute = null) {
         return await this.vectorDb.getSuggestion(prompt, attribute);
+    }
+
+    getAgentById(agentId) {
+        return this.agents.getAgentById(agentId);
+    }
+
+    getAllAgents() {
+        return this.agents;
     }
 
     async listModels() {
