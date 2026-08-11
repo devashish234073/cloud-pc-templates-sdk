@@ -62,8 +62,36 @@ async function main() {
     console.log("vector db suggestion text",response2);
 }
 main();
-``` 
-4. Launch index.js
 ```
-node index.js
+
+## For agents use the following
+1. Start all agents 
+```
+npx cloud-pc-templates ai agents startAllOn linux
+```
+  or for windows
+```
+npx cloud-pc-templates@latest ai agents startAllOn docker
+```
+2. Create new app add dependency 
+```
+mkdir new-app
+cd new-app
+npm init -y
+npm install cloud-pc-templates-sdk
+```
+3. create index.js with below content and run
+```javascript
+let { Sdk }  = require("cloud-pc-templates-sdk");
+async function main() {
+    let sdk = new Sdk("ollamalocal");
+    let health = await sdk.getAllAgents().healthcheck();
+    console.log("Agents Health", health);
+    let agent = sdk.getAgentById('web-explorer');
+    let apiDoc = await agent.getApiDoc();
+    console.log("Agent API Doc", apiDoc);
+    let agentApiHitInsights = await agent.getApiHitInsights();
+    console.log("Agent API Insights", agentApiHitInsights);
+}
+main();
 ```
