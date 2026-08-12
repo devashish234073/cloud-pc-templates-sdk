@@ -102,7 +102,7 @@ main();
 
 ## Added 'sdk.callAgent' to call an agent with any prompt
 Steps:
-1. Start any loginmode
+1. Start any loginmode, e.g. ollamacloud
    ```
    npx cloud-pc-templates ai login loginMode ollamacloud
    ```
