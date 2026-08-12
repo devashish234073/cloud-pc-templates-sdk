@@ -72,7 +72,8 @@ export class Sdk {
         const structured = await this.agentCallResolver.resolveAgentCall(agent, prompt);
 
         try {
-            return await agent.call(structured.httpMethod, structured.path, structured.body ?? null);
+            const agentResponse = await agent.call(structured.httpMethod, structured.path, structured.body ?? null);
+            return await this.agentCallResolver.summarizeAgentResponse(prompt, structured, agentResponse);
         } catch (callError) {
             return await this.agentCallResolver.buildAgentError(prompt, structured, callError);
         }
@@ -106,18 +107,18 @@ export class Sdk {
     }
 }
 
-/*let sdk = new Sdk("ollamacloud");
+let sdk = new Sdk("ollamacloud");
 sdk.setSelectedModel("gpt-oss:120b");
-sdk.listModels();
+/*sdk.listModels();
 let response1 = await sdk.chat("Who are you?",null, (token) => {
     process.stdout.write(token);
 });
 let response2 = await sdk.chat("Hello");
 
 console.log("\n---");
-console.log(sdk.getChatHistory());
+console.log(sdk.getChatHistory());*/
 let agentResponse = await sdk.callAgent(
     'playwright connector',
     'Go to https://cloud-pc-templates.com/ and tell me what all you see'
 );
-console.log(agentResponse);*/
+console.log(agentResponse);

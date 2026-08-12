@@ -112,4 +112,23 @@ export class AgentCallResolver {
         }
         return { errorMessage: rawError, retryable: false };
     }
+
+    async summarizeAgentResponse(prompt, structured, agentResponse) {
+        const systemPrompt =
+            "You are an assistant that just performed an action on behalf of the user via an internal agent.\n" +
+            "The agent call below was executed and returned a raw JSON/text result.\n" +
+            "Reply to the user's original request as if you carried out the action yourself — do not mention " +
+            "the agent, the API call, JSON, or any internal plumbing.\n" +
+            "Do NOT omit any important information present in the agent's response — include all relevant " +
+            "details, data points, values, and findings from the result.\n" +
+            "Attempted call:\n" + JSON.stringify(structured) + "\n\n" +
+            "Agent response:\n" + JSON.stringify(agentResponse);
+
+        const messages = [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: prompt }
+        ];
+
+        return await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+    }
 }
