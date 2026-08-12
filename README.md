@@ -95,6 +95,49 @@ async function main() {
 }
 main();
 ```
+
+## Added 'sdk.callAgent' to call an agent with any prompt
+Steps:
+1. Start any loginmode
+   ```
+   npx cloud-pc-templates ai login loginMode ollamacloud
+   ```
+2. Start all agents
+   ```
+   npm cloud-pc-templates ai agents startAllOn linux
+   ```
+   Or for windows, run the below
+   ```
+   npm cloud-pc-templates ai agents startAllOn docker
+   ```
+3. Start the vector db
+   ```
+   npx cloud-pc-templates ai agents startVectorDb
+   ```
+4. create a new app and in it create an agentcall.js like below
+   ```
+   mkdir new-app
+   cd new-app
+   npm init -y
+   npm install cloud-pc-templates-sdk
+   ```
+   File content:
+   ```javascript
+   let { Sdk } = require("cloud-pc-templates-sdk");
+   async function main() {
+       let sdk = new Sdk("ollamacloud");
+       sdk.setSelectedModel("gpt-oss:120b");
+       let agentResponse = await sdk.callAgent(
+           'playwright connector',
+           'Go to https://cloud-pc-templates.com/ and tell me what all you see'
+       );
+       console.log(agentResponse);
+   }
+   main();
+   ```
+Sample output:
+<img width="1296" height="1006" alt="image" src="https://github.com/user-attachments/assets/a546b84b-d1f6-4d67-8512-6a15a5d75b33" />
+
 ### output:
 
 <img width="915" height="443" alt="image" src="https://github.com/user-attachments/assets/1261bb62-6b2a-4ed5-a3d5-b1566ef0b2d7" />
