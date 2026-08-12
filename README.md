@@ -100,7 +100,7 @@ main();
 
 <img width="915" height="443" alt="image" src="https://github.com/user-attachments/assets/1261bb62-6b2a-4ed5-a3d5-b1566ef0b2d7" />
 
-## Added 'sdk.callAgent' to call an agent with any prompt
+## Added 'sdk.callAgent' to call an agent with a prompt, the first argument here is the model-id and second one is the prompt. Model ids can be found in agents.mjs
 Steps:
 1. Start any loginmode, e.g. ollamacloud
    ```
