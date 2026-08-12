@@ -164,7 +164,7 @@ class Agent {
     id;
     logger;
     constructor(host, id) {
-        this.logger = new Logger("Agent-"+id);
+        this.logger = new Logger("Agent-" + id);
         if (!registryMap[id]) {
             throw new Error("Invalid agent id: " + id + ". Available agents: " + Object.keys(registryMap).join(", "));
         }
@@ -174,6 +174,10 @@ class Agent {
 
     getDetails() {
         return registryMap[this.id];
+    }
+
+    getId() {
+        return this.id;
     }
 
     async login() {
@@ -204,6 +208,18 @@ class Agent {
         let insightsUrl = this.host + ":" + this.getDetails().port + "/insights";
         const response = await fetch(insightsUrl);
         return await response.text();
+    }
+
+    async call(httpMethod, path, body = null) {
+        let url = this.host + ":" + this.getDetails().port + path;
+        const response = await fetch(url, {
+            method: httpMethod,
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: body ? JSON.stringify(body) : null
+        });
+        return await response.json();
     }
 }
 
@@ -236,7 +252,7 @@ export class Agents {
             );
         }
         let agent = this.agentsMap[agentId];
-        if(!agent) {
+        if (!agent) {
             this.logger.error(`No agent with agent id ${agentId} available.`);
         }
         return await agent.login();

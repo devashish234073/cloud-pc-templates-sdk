@@ -2,10 +2,12 @@ import { LoginMode } from "./loginMode.mjs";
 import { Logger } from "./logger.mjs";
 import { VectorDB } from "./vectordb.mjs";
 import { Agents } from "./agents.mjs";
+import { AgentCallResolver } from "./agentCallResolver.mjs";
 
 export class Sdk {
     logger = new Logger("Sdk");
     loginMode;
+    agentCallResolver;
     messageHistory = [];
     selectedModel = null;
     vectorDb;
@@ -14,6 +16,15 @@ export class Sdk {
         this.loginMode = new LoginMode(host, loginModeId);
         this.vectorDb = new VectorDB(host);
         this.agents = new Agents(host);
+        this.agentCallResolver = new AgentCallResolver(this, this.loginMode);
+    }
+
+    getSelectedModel() {
+        return this.selectedModel;
+    }
+
+    setSelectedModel(modelName) {
+        this.selectedModel = modelName;
     }
 
     async getVectorDbApiDocSuggestion(prompt, attribute = null) {
@@ -45,6 +56,28 @@ export class Sdk {
         }
     }
 
+    async callAgent(agentId, prompt) {
+        const agent = this.getAgentById(agentId);
+        if (!agent) {
+            throw new Error("Agent not found");
+        }
+        
+        if (!this.selectedModel) {
+            this.selectedModel = await this.loginMode.getFirstModel();
+            if (!this.selectedModel) {
+                throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
+            }
+        }
+
+        const structured = await this.agentCallResolver.resolveAgentCall(agent, prompt);
+
+        try {
+            return await agent.call(structured.httpMethod, structured.path, structured.body ?? null);
+        } catch (callError) {
+            return await this.agentCallResolver.buildAgentError(prompt, structured, callError);
+        }
+    }
+
     async chat(message, selectedModel = null, onStream = null) {
         try {
             this.messageHistory.push({ role: "user", content: message });
@@ -73,7 +106,8 @@ export class Sdk {
     }
 }
 
-/*let sdk = new Sdk("ollamalocal");
+/*let sdk = new Sdk("ollamacloud");
+sdk.setSelectedModel("gpt-oss:120b");
 sdk.listModels();
 let response1 = await sdk.chat("Who are you?",null, (token) => {
     process.stdout.write(token);
@@ -81,4 +115,9 @@ let response1 = await sdk.chat("Who are you?",null, (token) => {
 let response2 = await sdk.chat("Hello");
 
 console.log("\n---");
-console.log(sdk.getChatHistory());*/
+console.log(sdk.getChatHistory());
+let agentResponse = await sdk.callAgent(
+    'playwright connector',
+    'Go to https://cloud-pc-templates.com/ and tell me what all you see'
+);
+console.log(agentResponse);*/
