@@ -116,9 +116,9 @@ let response1 = await sdk.chat("Who are you?",null, (token) => {
 let response2 = await sdk.chat("Hello");
 
 console.log("\n---");
-console.log(sdk.getChatHistory());*/
+console.log(sdk.getChatHistory());
 let agentResponse = await sdk.callAgent(
     'playwright connector',
     'Go to https://cloud-pc-templates.com/ and tell me what all you see'
 );
-console.log(agentResponse);
+console.log(agentResponse);*/
