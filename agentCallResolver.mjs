@@ -32,7 +32,7 @@ export class AgentCallResolver {
 
     async resolveAgentCall(agent, prompt) {
         // Attempt 1: narrow vectorDB context
-        const vectorContext = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId());
+        const vectorContext = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
         const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
 
         if (!firstAttempt.warning) {
