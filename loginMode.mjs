@@ -56,51 +56,54 @@ export class LoginMode {
             top_p: 0.7,
             stream: true
         });
+        try {
+            const response = await fetch(inferenceUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payload
+            });
 
-        const response = await fetch(inferenceUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: payload
-        });
+            if (response.status !== 200) {
+                return false;
+            }
 
-        if (response.status !== 200) {
-            return false;
-        }
+            let fullText = "";
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let buffer = "";
 
-        let fullText = "";
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = "";
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
+                buffer += decoder.decode(value, { stream: true });
+                const lines = buffer.split("\n");
+                buffer = lines.pop();
 
-            buffer += decoder.decode(value, { stream: true });
-            const lines = buffer.split("\n");
-            buffer = lines.pop();
+                for (const line of lines) {
+                    const trimmed = line.trim();
+                    if (!trimmed.startsWith("data:")) continue;
 
-            for (const line of lines) {
-                const trimmed = line.trim();
-                if (!trimmed.startsWith("data:")) continue;
+                    const jsonStr = trimmed.slice(5).trim();
+                    if (jsonStr === "[DONE]") continue;
 
-                const jsonStr = trimmed.slice(5).trim();
-                if (jsonStr === "[DONE]") continue;
-
-                try {
-                    const parsed = JSON.parse(jsonStr);
-                    const delta = parsed.choices?.[0]?.delta?.content;
-                    if (delta) {
-                        fullText += delta;
-                        if (onToken) onToken(delta);
+                    try {
+                        const parsed = JSON.parse(jsonStr);
+                        const delta = parsed.choices?.[0]?.delta?.content;
+                        if (delta) {
+                            fullText += delta;
+                            if (onToken) onToken(delta);
+                        }
+                    } catch (e) {
+                        this.logger.error("Failed to parse SSE chunk: " + jsonStr);
                     }
-                } catch (e) {
-                    this.logger.error("Failed to parse SSE chunk: " + jsonStr);
                 }
             }
+            return fullText;
+        } catch (error) {
+            this.logger.error("Error during inference: ", error);
+            return null;
         }
-
-        return fullText;
     }
 
     async login() {
@@ -110,25 +113,29 @@ export class LoginMode {
         }
 
         let healthUrl = this.host + ":" + this.getDetails().port + "/v1/models";
+        try {
+            const response = await fetch(healthUrl);
 
-        const response = await fetch(healthUrl);
+            if (response.status !== 200) {
+                return false;
+            }
 
-        if (response.status !== 200) {
+            const data = await response.json();
+
+            if (data.data.length) {
+                this.logger.debug("Login successful for mode " + this.id);
+                this.availableModels = Object.fromEntries(data.data
+                    .filter(item => item.object == 'model')
+                    .filter(item => item.id.indexOf('embed') === -1) //to remove embedding models like nomic-embed-text
+                    .map(item => [item.id, item]));
+                this.lastSuccessfulLoginAt = Date.now();
+                return true;
+            }
+            this.logger.error("Login failed for mode " + this.id);
+            return false;
+        } catch (error) {
+            this.logger.error("Error checking health: ", error);
             return false;
         }
-
-        const data = await response.json();
-
-        if (data.data.length) {
-            this.logger.debug("Login successful for mode " + this.id);
-            this.availableModels = Object.fromEntries(data.data
-                .filter(item => item.object == 'model')
-                .filter(item => item.id.indexOf('embed') === -1) //to remove embedding models like nomic-embed-text
-                .map(item => [item.id, item]));
-            this.lastSuccessfulLoginAt = Date.now();
-            return true;
-        }
-        this.logger.error("Login failed for mode " + this.id);
-        return false;
     }
 }

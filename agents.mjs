@@ -182,44 +182,63 @@ class Agent {
 
     async login() {
         let healthUrl = this.host + ":" + this.getDetails().port + "/health";
+        try {
+            const response = await fetch(healthUrl);
 
-        const response = await fetch(healthUrl);
+            if (response.status !== 200) {
+                return false;
+            }
 
-        if (response.status !== 200) {
+            const data = await response.json();
+
+            if (data.status === "UP") {
+                return true;
+            }
+
+            return false;
+        } catch (error) {
+            this.logger.error("Error during health check: ", error);
             return false;
         }
-
-        const data = await response.json();
-
-        if (data.status === "UP") {
-            return true;
-        }
-
-        return false;
     }
 
     async getApiDoc() {
         let apiDocUrl = this.host + ":" + this.getDetails().port + "/apidoc";
-        const response = await fetch(apiDocUrl);
-        return await response.text();
+        try {
+            const response = await fetch(apiDocUrl);
+            return await response.text();
+        } catch (error) {
+            this.logger.error("Error fetching API documentation: ", error);
+            return error.message;
+        }
     }
 
     async getApiHitInsights() {
         let insightsUrl = this.host + ":" + this.getDetails().port + "/insights";
-        const response = await fetch(insightsUrl);
-        return await response.text();
+        try {
+            const response = await fetch(insightsUrl);
+            return await response.text();
+        } catch (error) {
+            this.logger.error("Error fetching API hit insights: ", error);
+            return error.message;
+        }
     }
 
     async call(httpMethod, path, body = null) {
         let url = this.host + ":" + this.getDetails().port + path;
-        const response = await fetch(url, {
-            method: httpMethod,
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: body ? JSON.stringify(body) : null
-        });
-        return await response.json();
+        try {
+            const response = await fetch(url, {
+                method: httpMethod,
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: body ? JSON.stringify(body) : null
+            });
+            return await response.json();
+        } catch (error) {
+            this.logger.error("Error calling API: ", error);
+            return error.message;
+        }
     }
 }
 
