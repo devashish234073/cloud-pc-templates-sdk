@@ -9,6 +9,7 @@ export class Sdk {
     loginMode;
     agentCallResolver;
     messageHistory = [];
+    messageHistoryMetaData = [];
     selectedModel = null;
     vectorDb;
     agents;
@@ -81,7 +82,7 @@ export class Sdk {
 
     async chat(message, selectedModel = null, onStream = null) {
         try {
-            this.messageHistory.push({ role: "user", content: message });
+            this.pushMessageHistory({ role: "user", content: message });
 
             if (selectedModel) {
                 this.selectModel(selectedModel);
@@ -93,23 +94,40 @@ export class Sdk {
                 }
             }
             let response = await this.loginMode.infer(this.selectedModel, this.messageHistory, onStream);
-            this.messageHistory.push({ role: "assistant", content: response });
+            this.pushMessageHistory({ role: "assistant", content: response });
             return response;
         } catch (e) {
             this.logger.log(e);
-            this.messageHistory.push({ role: "assistant", content: String(e) });
+            this.pushMessageHistory({ role: "assistant", content: String(e) });
             return String(e);
         }
+    }
+
+    pushMessageHistory(message) {
+        this.messageHistory.push(message);
+        this.messageHistoryMetaData.push({ timestamp: new Date() });
     }
 
     getChatHistory() {
         return [...this.messageHistory];
     }
+
+    getChatHistoryWithMetadata() {
+        return this.messageHistory.map((msg, index) => ({
+            ...msg,
+            metadata: this.messageHistoryMetaData[index]
+        }));
+    }
+
+    clearChatHistory() {
+        this.messageHistory = [];
+        this.messageHistoryMetaData = [];
+    }
 }
 
-let sdk = new Sdk("ollamacloud");
+/*let sdk = new Sdk("ollamacloud");
 sdk.setSelectedModel("gpt-oss:120b");
-/*sdk.listModels();
+sdk.listModels();
 let response1 = await sdk.chat("Who are you?",null, (token) => {
     process.stdout.write(token);
 });
