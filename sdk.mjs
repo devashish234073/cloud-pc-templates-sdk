@@ -13,10 +13,13 @@ export class Sdk {
     selectedModel = null;
     vectorDb;
     agents;
-    constructor(loginModeId, host = "http://localhost") {
+    constructor(loginModeId, systemPrompt = null, host = "http://localhost") {
         this.loginMode = new LoginMode(host, loginModeId);
         this.vectorDb = new VectorDB(host);
         this.agents = new Agents(host);
+        if(systemPrompt) {
+            this.pushMessageHistory({ role: "system", content: systemPrompt });
+        }
         this.agentCallResolver = new AgentCallResolver(this, this.loginMode);
     }
 
