@@ -14,12 +14,12 @@ export class VectorDB {
             return null;
         }
         if (!response.results || !Array.isArray(response.results)) {
-            this.logger.log("Invalid response from vector DB: ", response);
+            this.logger.error("Invalid response from vector DB: ", response);
             return null;
         } else {
             let suggestions = [];
             response.results.forEach((item, index) => {
-                if(!attribute || !item.metadata.hasOwnProperty(attribute)) {
+                if (!attribute || !item.metadata.hasOwnProperty(attribute)) {
                     suggestions.push(item.metadata);
                 } else {
                     suggestions.push(item.metadata[attribute]);
@@ -31,16 +31,21 @@ export class VectorDB {
     async getSuggestionRaw(prompt) {
         let vectorSuggestionUrl = this.host + ":" + this.PORT + "/query";
         let payload = JSON.stringify({ prompt, topK: 3 });
-        const response = await fetch(vectorSuggestionUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: payload
-        });
+        try {
+            const response = await fetch(vectorSuggestionUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: payload
+            });
 
-        if (response.status !== 200) {
+            if (response.status !== 200) {
+                return null;
+            }
+            return response.json();
+        } catch (error) {
+            this.logger.error("Error fetching suggestion from vector DB: ", error);
             return null;
         }
-        return response.json();
     }
 }
 
