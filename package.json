@@ -1,6 +1,6 @@
 {
   "name": "cloud-pc-templates-sdk",
-  "version": "2.6.0",
+  "version": "2.7.0",
   "description": "",
   "main": "./sdk.mjs",
   "module": "./sdk.mjs",
@@ -24,5 +24,8 @@
   "bugs": {
     "url": "https://github.com/devashish234073/cloud-pc-templates-sdk/issues"
   },
-  "homepage": "https://github.com/devashish234073/cloud-pc-templates-sdk#readme"
+  "homepage": "https://github.com/devashish234073/cloud-pc-templates-sdk#readme",
+  "dependencies": {
+    "jsonrepair": "^3.15.0"
+  }
 }

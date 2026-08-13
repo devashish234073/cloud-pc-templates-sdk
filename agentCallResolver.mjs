@@ -1,4 +1,5 @@
 import { Logger } from "./logger.mjs";
+import { safeParseJson } from "./safeParseJson.mjs";
 
 export class AgentCallResolver {
     sdk;
@@ -26,31 +27,7 @@ export class AgentCallResolver {
         ];
 
         const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
-        return this.safeParseJson(response);
-    }
-
-    safeParseJson(text) {
-        if (typeof text !== "string") {
-            throw new Error("Expected string response from model, got: " + typeof text);
-        }
-        let cleaned = text.trim()
-            .replace(/^```json\s*/i, "")
-            .replace(/^```\s*/, "")
-            .replace(/```\s*$/, "");
-
-        try {
-            return JSON.parse(cleaned);
-        } catch (e) {
-            const match = cleaned.match(/\{[\s\S]*\}/);
-            if (match) {
-                try {
-                    return JSON.parse(match[0]);
-                } catch (e2) {
-                    // fall through to throw below
-                }
-            }
-            throw new Error("Failed to parse structured JSON from model response: " + text);
-        }
+        return safeParseJson(response);
     }
 
     async resolveAgentCall(agent, prompt) {
@@ -103,7 +80,7 @@ export class AgentCallResolver {
 
         try {
             const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
-            const parsed = this.safeParseJson(response);
+            const parsed = safeParseJson(response);
             if (parsed && typeof parsed.errorMessage === "string" && typeof parsed.retryable === "boolean") {
                 return parsed;
             }
