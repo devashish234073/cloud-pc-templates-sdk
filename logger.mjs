@@ -10,6 +10,9 @@ export class Logger {
     warn(message) {
         console.warn(`[${this.className}] ${new Date()} [WARN] ${message}`);
     }
+    error(message) {
+        console.error(`[${this.className}] ${new Date()} [WARN] ${message}`);
+    }
     debug(message) {
         if (this.debugMode) {
             console.log(`[${this.className}] ${new Date()} [DEBUG] ${message}`);
