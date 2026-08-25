@@ -13,7 +13,9 @@ export class Sdk {
     selectedModel = null;
     vectorDb;
     agents;
+    host;
     constructor(loginModeId, systemPrompt = null, host = "http://localhost") {
+        this.host = host;
         this.loginMode = new LoginMode(host, loginModeId);
         this.vectorDb = new VectorDB(host);
         this.agents = new Agents(host);
@@ -21,6 +23,10 @@ export class Sdk {
             this.pushMessageHistory({ role: "system", content: systemPrompt });
         }
         this.agentCallResolver = new AgentCallResolver(this, this.loginMode);
+    }
+
+    changeLoginMode(loginModeId) {
+        this.loginMode = new LoginMode(this.host, loginModeId);
     }
 
     getSelectedModel() {
