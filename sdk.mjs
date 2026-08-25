@@ -108,7 +108,10 @@ export class Sdk {
 
     pushMessageHistory(message) {
         this.messageHistory.push(message);
-        this.messageHistoryMetaData.push({ timestamp: new Date() });
+        this.messageHistoryMetaData.push({ 
+            timestamp: new Date(),
+            modelUsed: this.selectedModel,
+         });
     }
 
     getChatHistory() {
@@ -120,6 +123,45 @@ export class Sdk {
             ...msg,
             metadata: this.messageHistoryMetaData[index]
         }));
+    }
+
+    setMessageHistory(historyWithMetadata) {
+        if (!Array.isArray(historyWithMetadata)) {
+            throw new Error("Message history must be an array");
+        }
+
+        const messageHistory = [];
+        const messageHistoryMetaData = [];
+
+        historyWithMetadata.forEach((entry, index) => {
+            if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+                throw new Error("Message history entry at index " + index + " must be an object");
+            }
+
+            if (!Object.prototype.hasOwnProperty.call(entry, "metadata")) {
+                throw new Error("Message history entry at index " + index + " must include metadata");
+            }
+
+            const { metadata, ...message } = entry;
+
+            if (!message.role || typeof message.role !== "string") {
+                throw new Error("Message history entry at index " + index + " must include a string role");
+            }
+
+            if (!Object.prototype.hasOwnProperty.call(message, "content")) {
+                throw new Error("Message history entry at index " + index + " must include content");
+            }
+
+            if (!metadata || typeof metadata !== "object" || Array.isArray(metadata)) {
+                throw new Error("Message history metadata at index " + index + " must be an object");
+            }
+
+            messageHistory.push({ ...message });
+            messageHistoryMetaData.push({ ...metadata });
+        });
+
+        this.messageHistory = messageHistory;
+        this.messageHistoryMetaData = messageHistoryMetaData;
     }
 
     clearChatHistory() {
