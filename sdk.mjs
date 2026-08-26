@@ -3,6 +3,7 @@ import { Logger } from "./logger.mjs";
 import { VectorDB } from "./vectordb.mjs";
 import { Agents } from "./agents.mjs";
 import { AgentCallResolver } from "./agentCallResolver.mjs";
+import { Orchestrator } from "./orchestrator.mjs";
 
 export class Sdk {
     logger = new Logger("Sdk");
