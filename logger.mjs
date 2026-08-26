@@ -18,7 +18,4 @@ export class Logger {
             console.log(`[${this.className}] ${new Date()} [DEBUG] ${message}`);
         }
     }
-    warn(message) {
-        console.error(`[${this.className}] ${new Date()} [ERROR] ${message}`);
-    }
 }
