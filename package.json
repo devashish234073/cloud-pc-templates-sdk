@@ -1,6 +1,6 @@
 {
   "name": "cloud-pc-templates-sdk",
-  "version": "3.5.4",
+  "version": "3.5.5",
   "description": "",
   "main": "./sdk.mjs",
   "module": "./sdk.mjs",

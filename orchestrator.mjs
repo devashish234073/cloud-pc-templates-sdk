@@ -85,13 +85,13 @@ export class Orchestrator {
             try {
                 decision = await this.decideNextStep(originalPrompt, sdkHistory, history, agentsCatalog, vectorContext);
             } catch (e) {
-                const msg = "[ERROR:" + (e?.message ?? String(e)) + "]";
+                const msg = this.buildErrorMarker(e?.message ?? String(e), history);
                 if (onStream) onStream(msg);
                 return msg;
             }
 
             if (!decision || typeof decision.whatIsBeingDone !== "string") {
-                const msg = "[ERROR:Orchestrator returned an invalid decision]";
+                const msg = this.buildErrorMarker("Orchestrator returned an invalid decision", history);
                 if (onStream) onStream(msg);
                 return msg;
             }
@@ -103,7 +103,7 @@ export class Orchestrator {
             }
 
             if (!decision.agentId || !decision.taskPrompt) {
-                const msg = "[ERROR:Orchestrator step missing agentId or taskPrompt]";
+                const msg = this.buildErrorMarker("Orchestrator step missing agentId or taskPrompt", history);
                 if (onStream) onStream(msg);
                 return msg;
             }
@@ -111,24 +111,40 @@ export class Orchestrator {
             try {
                 const agentResult = await this.sdk.callAgent(decision.agentId, decision.taskPrompt);
                 history.push({ agentId: decision.agentId, taskPrompt: decision.taskPrompt, result: agentResult });
-                consecutiveFailures = 0; // reset on success
+                consecutiveFailures = 0;
             } catch (e) {
-                // feed the failure back so the LLM can adapt next iteration
                 const errorMessage = e?.message ?? String(e);
                 history.push({ agentId: decision.agentId, taskPrompt: decision.taskPrompt, error: errorMessage });
                 consecutiveFailures++;
 
                 if (consecutiveFailures >= MAX_CONSECUTIVE_FAILURES) {
-                    const msg = "[ERROR:Agent " + decision.agentId + " failed " + consecutiveFailures +
-                        " times in a row: " + errorMessage + "]";
+                    const msg = this.buildErrorMarker(
+                        "Agent " + decision.agentId + " failed " + consecutiveFailures + " times in a row: " + errorMessage,
+                        history
+                    );
                     if (onStream) onStream(msg);
                     return msg;
                 }
             }
         }
 
-        const msg = "[ERROR:Orchestration exceeded maximum steps (" + MAX_STEPS + ") without completing]";
+        const msg = this.buildErrorMarker(
+            "Orchestration exceeded maximum steps (" + MAX_STEPS + ") without completing",
+            history
+        );
         if (onStream) onStream(msg);
         return msg;
+    }
+
+    buildErrorMarker(reason, history) {
+        const completedSteps = history
+            .filter(h => h.result !== undefined)
+            .map(h => ({ agentId: h.agentId, taskPrompt: h.taskPrompt }));
+
+        const summary = completedSteps.length
+            ? reason + " | Completed before failure: " + JSON.stringify(completedSteps)
+            : reason + " | No steps completed before failure.";
+
+        return "[ERROR:" + summary + "]";
     }
 }
