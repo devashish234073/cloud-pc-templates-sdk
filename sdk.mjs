@@ -19,7 +19,7 @@ export class Sdk {
         this.loginMode = new LoginMode(host, loginModeId);
         this.vectorDb = new VectorDB(host);
         this.agents = new Agents(host);
-        if(systemPrompt) {
+        if (systemPrompt) {
             this.pushMessageHistory({ role: "system", content: systemPrompt });
         }
         this.agentCallResolver = new AgentCallResolver(this, this.loginMode);
@@ -71,7 +71,7 @@ export class Sdk {
         if (!agent) {
             throw new Error("Agent not found");
         }
-        
+
         if (!this.selectedModel) {
             this.selectedModel = await this.loginMode.getFirstModel();
             if (!this.selectedModel) {
@@ -89,6 +89,40 @@ export class Sdk {
         }
     }
 
+    async chatAgentMode(message, onStream = null) {
+        try {
+            this.pushMessageHistory({ role: "user", content: message });
+
+            if (!this.selectedModel) {
+                this.selectedModel = await this.loginMode.getFirstModel();
+                if (!this.selectedModel) {
+                    throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
+                }
+            }
+
+            let orchestrator = new Orchestrator(this, this.loginMode);
+
+            const finalMarker = await orchestrator.orchestrate(message, onStream);
+            const content = this.extractMarkerContent(finalMarker);
+            this.pushMessageHistory({ role: "assistant", content });
+            return content;
+        } catch (e) {
+            this.logger.log(e);
+            const errText = String(e);
+            if (onStream) onStream("[ERROR:" + errText + "]");
+            this.pushMessageHistory({ role: "assistant", content: errText });
+            return errText;
+        }
+    }
+
+    extractMarkerContent(marker) {
+        const done = marker.match(/^\[DONE:([\s\S]*)\]$/);
+        if (done) return done[1];
+        const err = marker.match(/^\[ERROR:([\s\S]*)\]$/);
+        if (err) return err[1];
+        return marker;
+    }
+
     async chat(message, selectedModel = null, onStream = null) {
         try {
             this.pushMessageHistory({ role: "user", content: message });
@@ -103,6 +137,7 @@ export class Sdk {
                 }
             }
             let response = await this.loginMode.infer(this.selectedModel, this.messageHistory, onStream);
+            if (onStream) onStream(null);
             this.pushMessageHistory({ role: "assistant", content: response });
             return response;
         } catch (e) {
@@ -114,10 +149,10 @@ export class Sdk {
 
     pushMessageHistory(message) {
         this.messageHistory.push(message);
-        this.messageHistoryMetaData.push({ 
+        this.messageHistoryMetaData.push({
             timestamp: new Date(),
             modelUsed: this.selectedModel,
-         });
+        });
     }
 
     getChatHistory() {

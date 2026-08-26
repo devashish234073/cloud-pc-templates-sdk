@@ -255,6 +255,17 @@ export class Agents {
         return this.agentsMap[agentId];
     }
 
+    list() {
+        return Object.values(this.agentsMap).map(agent => {
+            const details = agent.getDetails();
+            return {
+                id: agent.getId(),
+                name: details.name,
+                description: details.description
+            };
+        });
+    }
+
     async getApiDoc(agentId) {
         let agent = this.agentsMap[agentId];
         return await agent.getApiDoc();
