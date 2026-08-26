@@ -103,7 +103,7 @@ export class Sdk {
 
             let orchestrator = new Orchestrator(this, this.loginMode);
 
-            const finalMarker = await orchestrator.orchestrate(message, onStream);
+            const finalMarker = await orchestrator.orchestrate(message, this.messageHistory, onStream);
             const content = this.extractMarkerContent(finalMarker);
             this.pushMessageHistory({ role: "assistant", content });
             return content;

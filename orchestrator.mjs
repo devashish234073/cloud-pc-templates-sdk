@@ -31,20 +31,22 @@ export class Orchestrator {
             "Never fabricate an agent response. Never return more than one shape.";
     }
 
-    async decideNextStep(originalPrompt, history, agentsCatalog, vectorContext) {
+    async decideNextStep(originalPrompt, sdkHistory, history, agentsCatalog, vectorContext) {
         const messages = [
             { role: "system", content: this.buildSystemPrompt(agentsCatalog, vectorContext) },
+            ...sdkHistory,
             {
                 role: "user",
                 content: "Original request:\n" + originalPrompt +
                     "\n\nSteps so far:\n" + (history.length ? JSON.stringify(history) : "(none yet)")
             }
         ];
+        this.logger.debug("Orchestrator messages: ", messages);
         const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
         return safeParseJson(response);
     }
 
-    async orchestrate(originalPrompt, onStream = null) {
+    async orchestrate(originalPrompt, sdkHistory, onStream = null) {
         const history = [];
 
         const vectorSuggestions = await this.sdk.getVectorDbApiDocSuggestion(originalPrompt, "text");
@@ -57,7 +59,7 @@ export class Orchestrator {
         for (let step = 0; step < MAX_STEPS; step++) {
             let decision;
             try {
-                decision = await this.decideNextStep(originalPrompt, history, agentsCatalog, vectorContext);
+                decision = await this.decideNextStep(originalPrompt, sdkHistory, history, agentsCatalog, vectorContext);
             } catch (e) {
                 const msg = "[ERROR:" + (e?.message ?? String(e)) + "]";
                 if (onStream) onStream(msg);
