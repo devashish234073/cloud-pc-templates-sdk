@@ -110,7 +110,7 @@ export class Sdk {
         } catch (e) {
             this.logger.log(e);
             const errText = String(e);
-            if (onStream) onStream("[ERROR:" + errText + "]");
+            if (onStream) onStream("[ERROR:" + errText + "]",null);
             this.pushMessageHistory({ role: "assistant", content: errText });
             return errText;
         }

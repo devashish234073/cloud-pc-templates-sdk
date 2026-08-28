@@ -86,17 +86,17 @@ export class Orchestrator {
                 decision = await this.decideNextStep(originalPrompt, sdkHistory, history, agentsCatalog, vectorContext);
             } catch (e) {
                 const msg = this.buildErrorMarker(e?.message ?? String(e), history);
-                if (onStream) onStream(msg);
+                if (onStream) onStream(msg, history);
                 return msg;
             }
 
             if (!decision || typeof decision.whatIsBeingDone !== "string") {
                 const msg = this.buildErrorMarker("Orchestrator returned an invalid decision", history);
-                if (onStream) onStream(msg);
+                if (onStream) onStream(msg, history);
                 return msg;
             }
 
-            if (onStream) onStream(decision.whatIsBeingDone);
+            if (onStream) onStream(decision.whatIsBeingDone, history);
 
             if (decision.whatIsBeingDone.startsWith("[DONE:") || decision.whatIsBeingDone.startsWith("[ERROR:")) {
                 return decision.whatIsBeingDone;
@@ -122,7 +122,7 @@ export class Orchestrator {
                         "Agent " + decision.agentId + " failed " + consecutiveFailures + " times in a row: " + errorMessage,
                         history
                     );
-                    if (onStream) onStream(msg);
+                    if (onStream) onStream(msg, history);
                     return msg;
                 }
             }
@@ -132,7 +132,7 @@ export class Orchestrator {
             "Orchestration exceeded maximum steps (" + MAX_STEPS + ") without completing",
             history
         );
-        if (onStream) onStream(msg);
+        if (onStream) onStream(msg, history);
         return msg;
     }
 
