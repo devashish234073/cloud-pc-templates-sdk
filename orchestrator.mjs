@@ -87,25 +87,25 @@ export class Orchestrator {
             } catch (e) {
                 const msg = this.buildErrorMarker(e?.message ?? String(e), history);
                 if (onStream) onStream(msg, history);
-                return msg;
+                return {msg,history};
             }
 
             if (!decision || typeof decision.whatIsBeingDone !== "string") {
                 const msg = this.buildErrorMarker("Orchestrator returned an invalid decision", history);
                 if (onStream) onStream(msg, history);
-                return msg;
+                return {msg,history};
             }
 
             if (onStream) onStream(decision.whatIsBeingDone, history);
 
             if (decision.whatIsBeingDone.startsWith("[DONE:") || decision.whatIsBeingDone.startsWith("[ERROR:")) {
-                return decision.whatIsBeingDone;
+                return {msg: decision.whatIsBeingDone, history};
             }
 
             if (!decision.agentId || !decision.taskPrompt) {
                 const msg = this.buildErrorMarker("Orchestrator step missing agentId or taskPrompt", history);
-                if (onStream) onStream(msg);
-                return msg;
+                if (onStream) onStream(msg, history);
+                return {msg,history};
             }
 
             try {
@@ -123,7 +123,7 @@ export class Orchestrator {
                         history
                     );
                     if (onStream) onStream(msg, history);
-                    return msg;
+                    return {msg,history};
                 }
             }
         }
@@ -133,7 +133,7 @@ export class Orchestrator {
             history
         );
         if (onStream) onStream(msg, history);
-        return msg;
+        return {msg,history};
     }
 
     buildErrorMarker(reason, history) {

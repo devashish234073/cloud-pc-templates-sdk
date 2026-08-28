@@ -104,8 +104,8 @@ export class Sdk {
             let orchestrator = new Orchestrator(this, this.loginMode);
 
             const finalMarker = await orchestrator.orchestrate(message, this.messageHistory, onStream);
-            const content = this.extractMarkerContent(finalMarker);
-            this.pushMessageHistory({ role: "assistant", content });
+            const content = this.extractMarkerContent(finalMarker.msg);
+            this.pushMessageHistory({ role: "assistant", content },finalMarker.history);
             return content;
         } catch (e) {
             this.logger.log(e);
@@ -148,11 +148,12 @@ export class Sdk {
         }
     }
 
-    pushMessageHistory(message) {
+    pushMessageHistory(message, agentHistory = null) {
         this.messageHistory.push(message);
         this.messageHistoryMetaData.push({
             timestamp: new Date(),
             modelUsed: this.selectedModel,
+            agentHistory: agentHistory ? [...agentHistory] : null
         });
     }
 
