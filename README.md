@@ -143,5 +143,30 @@ Steps:
 
 <img width="1296" height="1006" alt="image" src="https://github.com/user-attachments/assets/a546b84b-d1f6-4d67-8512-6a15a5d75b33" />
 
+# Latest addition is orchestrator api(chatAgentMode function), try it with steps below:
 
+ ```
+   mkdir new-app
+   cd new-app
+   npm init -y
+   npm install cloud-pc-templates-sdk
+   ```
+   File content:
+   ```javascript
+   llet { Sdk }  = require("cloud-pc-templates-sdk");
+async function main() {
+    let sdk = new Sdk("ollamacloud");
+    sdk.setSelectedModel('gpt-oss:120b');
+    let response = await sdk.chatAgentMode("create an spring java project with test apis",(whatIsBeingDone)=>{
+        console.log("I am asking the agent to ",whatIsBeingDone);
+    });
+    console.log(response);
+    let history = sdk.getChatHistory();
+    console.log(history);
+}
+main();
+   ```
+### Sample output:
+
+<img width="1369" height="708" alt="image" src="https://github.com/user-attachments/assets/818ff252-90aa-49de-82bc-1b5c55a1a63b" />
 
