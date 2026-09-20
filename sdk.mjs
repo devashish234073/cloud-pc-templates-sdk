@@ -26,6 +26,10 @@ export class Sdk {
         this.agentCallResolver = new AgentCallResolver(this, this.loginMode);
     }
 
+    useSpeficAgentsOnly(agentIds) {
+        this.agents = new Agents(this.host, agentIds);
+    }
+
     changeLoginMode(loginModeId) {
         this.loginMode = new LoginMode(this.host, loginModeId);
     }

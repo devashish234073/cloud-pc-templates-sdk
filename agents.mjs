@@ -245,9 +245,13 @@ class Agent {
 export class Agents {
     agentsMap = {};
     logger = new Logger("AllAgents");
-    constructor(host) {
+    constructor(host, agentIds = []) {
         for (let agentId in registryMap) {
-            this.agentsMap[agentId] = new Agent(host, agentId);
+            if(!agentIds || agentIds.length === 0) {
+                this.agentsMap[agentId] = new Agent(host, agentId);
+            } else if(agentIds.includes(agentId)) {
+                this.agentsMap[agentId] = new Agent(host, agentId);
+            }
         }
     }
 
