@@ -206,10 +206,11 @@ class Agent {
         let apiDocUrl = this.host + ":" + this.getDetails().port + "/apidoc";
         try {
             const response = await fetch(apiDocUrl);
+            if (!response.ok) throw new Error(`getApiDoc failed: HTTP ${response.status}`);
             return await response.text();
         } catch (error) {
             this.logger.error("Error fetching API documentation: ", error);
-            return error.message;
+            throw error;
         }
     }
 
@@ -229,15 +230,14 @@ class Agent {
         try {
             const response = await fetch(url, {
                 method: httpMethod,
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                headers: { "Content-Type": "application/json" },
                 body: body ? JSON.stringify(body) : null
             });
+            if (!response.ok) throw new Error(`Agent call failed: HTTP ${response.status}`);
             return await response.json();
         } catch (error) {
             this.logger.error("Error calling API: ", error);
-            return error.message;
+            throw error;
         }
     }
 }
@@ -247,9 +247,9 @@ export class Agents {
     logger = new Logger("AllAgents");
     constructor(host, agentIds = []) {
         for (let agentId in registryMap) {
-            if(!agentIds || agentIds.length === 0) {
+            if (!agentIds || agentIds.length === 0) {
                 this.agentsMap[agentId] = new Agent(host, agentId);
-            } else if(agentIds.includes(agentId)) {
+            } else if (agentIds.includes(agentId)) {
                 this.agentsMap[agentId] = new Agent(host, agentId);
             }
         }
