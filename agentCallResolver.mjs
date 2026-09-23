@@ -30,32 +30,31 @@ export class AgentCallResolver {
         return safeParseJson(response);
     }
 
+    isResolvedCall(x) {
+        return x && typeof x === "object" && typeof x.httpMethod === "string" && typeof x.path === "string";
+    }
+
     async resolveAgentCall(agent, prompt) {
         // Attempt 1: narrow vectorDB context
         const vectorContext = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
         const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
 
-        if (!firstAttempt.warning) {
+        if (isResolvedCall(firstAttempt)) {
             return firstAttempt;
         }
 
-        this.logger.warn(
-            "VectorDB context insufficient for agent " + agent.getId() +
-            " (\"" + firstAttempt.warning + "\"), retrying with full API doc."
-        );
+        const reason = (firstAttempt && firstAttempt.warning) || "resolver returned an unusable response";
+        this.logger.warn(`Attempt 1 unusable for agent ${agent.getId()} ("${reason}"), retrying with full API doc.`);
 
-        // Attempt 2: fall back to the agent's complete API doc
         const fullApiDoc = await agent.getApiDoc();
         const secondAttempt = await this.askForStructuredCall(prompt, fullApiDoc);
 
-        if (secondAttempt.warning) {
-            throw new Error(
-                "Unable to resolve API call for agent " + agent.getId() +
-                " even with full API doc: " + secondAttempt.warning
-            );
+        if (isResolvedCall(secondAttempt)) {
+            return secondAttempt;
         }
 
-        return secondAttempt;
+        const secondReason = (secondAttempt && secondAttempt.warning) || "resolver returned an unusable response";
+        throw new Error(`Unable to resolve API call for agent ${agent.getId()} even with full api doc: ${secondReason}`);
     }
 
     async buildAgentError(prompt, structured, callError) {
