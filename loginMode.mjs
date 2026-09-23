@@ -47,63 +47,63 @@ export class LoginMode {
     }
 
     async infer(modelName, messages, onToken = null) {
-        await this.login(); // Ensure models are loaded
+        const loggedIn = await this.login();
+        if (!loggedIn) {
+            throw new Error(`Login failed for mode ${this.id}; cannot run inference`);
+        }
+
         let inferenceUrl = this.host + ":" + this.getDetails().port + "/v1/chat/completions";
-        let payload = JSON.stringify({
-            model: modelName,
-            messages,
-            temperature: 0.5,
-            top_p: 0.7,
-            stream: true
+        let payload = JSON.stringify({ model: modelName, messages, temperature: 0.5, top_p: 0.7, stream: true });
+
+        const response = await fetch(inferenceUrl, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: payload
         });
-        try {
-            const response = await fetch(inferenceUrl, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: payload
-            });
 
-            if (response.status !== 200) {
-                return false;
-            }
+        if (response.status !== 200) {
+            throw new Error(`Inference request failed: HTTP ${response.status}`);
+        }
 
-            let fullText = "";
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let buffer = "";
+        let fullText = "";
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
 
-                buffer += decoder.decode(value, { stream: true });
-                const lines = buffer.split("\n");
-                buffer = lines.pop();
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split("\n");
+            buffer = lines.pop();
 
-                for (const line of lines) {
-                    const trimmed = line.trim();
-                    if (!trimmed.startsWith("data:")) continue;
+            for (const line of lines) {
+                const trimmed = line.trim();
+                if (!trimmed.startsWith("data:")) continue;
 
-                    const jsonStr = trimmed.slice(5).trim();
-                    if (jsonStr === "[DONE]") continue;
+                const jsonStr = trimmed.slice(5).trim();
+                if (jsonStr === "[DONE]") continue;
 
-                    try {
-                        const parsed = JSON.parse(jsonStr);
-                        const delta = parsed.choices?.[0]?.delta?.content;
-                        if (delta) {
-                            fullText += delta;
-                            if (onToken) onToken(delta);
-                        }
-                    } catch (e) {
-                        this.logger.error("Failed to parse SSE chunk: " + jsonStr);
+                try {
+                    const parsed = JSON.parse(jsonStr);
+                    const delta = parsed.choices?.[0]?.delta?.content;
+                    if (delta) {
+                        fullText += delta;
+                        if (onToken) onToken(delta);
                     }
+                } catch (e) {
+                    this.logger.error("Failed to parse SSE chunk: " + jsonStr);
                 }
             }
-            return fullText;
-        } catch (error) {
-            this.logger.error("Error during inference: ", error);
-            return null;
         }
+
+        const ollamaErrorMatch = fullText.match(/⚠️\s*Ollama error:\s*(.+)/i);
+        if (ollamaErrorMatch) {
+            throw new Error(`Ollama error: ${ollamaErrorMatch[1].trim()}`);
+        }
+
+        return fullText;
     }
 
     async login() {

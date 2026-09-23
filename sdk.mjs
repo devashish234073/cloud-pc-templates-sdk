@@ -80,7 +80,7 @@ export class Sdk {
         if (!this.selectedModel) {
             this.selectedModel = await this.loginMode.getFirstModel();
             if (!this.selectedModel) {
-                throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
+                throw new Error("No model selected and no available models for login mode " + this.loginMode.id + ". Please use one of the npx command from loginMode card to login and select a model.");
             }
         }
 
@@ -106,7 +106,7 @@ export class Sdk {
             if (!this.selectedModel) {
                 this.selectedModel = await this.loginMode.getFirstModel();
                 if (!this.selectedModel) {
-                    throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
+                    throw new Error("No model selected and no available models for login mode " + this.loginMode.id + ". Please use one of the npx command from loginMode card to login and select a model.");
                 }
             }
 
@@ -143,7 +143,7 @@ export class Sdk {
             if (!this.selectedModel) {
                 this.selectedModel = await this.loginMode.getFirstModel();
                 if (!this.selectedModel) {
-                    throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
+                    throw new Error("No model selected and no available models for login mode " + this.loginMode.id + ". Please use one of the npx command from loginMode card to login and select a model.");
                 }
             }
             let response = await this.loginMode.infer(this.selectedModel, this.messageHistory, onStream);
