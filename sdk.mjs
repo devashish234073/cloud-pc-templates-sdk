@@ -77,10 +77,19 @@ export class Sdk {
             throw new Error("Agent not found");
         }
 
+        const isUp = await agent.login();
+        if (!isUp) {
+            const details = agent.getDetails();
+            return {
+                errorMessage: `${details.name} isn't running. Start it first using appropriate npx command e.g. npx cloud-pc-templates ai agents startAllOn docker for starting agents in docker or use 'linux' for linux machine.`,
+                retryable: true
+            };
+        }
+
         if (!this.selectedModel) {
             this.selectedModel = await this.loginMode.getFirstModel();
             if (!this.selectedModel) {
-                throw new Error("No model selected and no available models for login mode " + this.loginMode.id + ". Please use one of the npx command from loginMode card to login and select a model.");
+                throw new Error("No model selected and no available models for login mode " + this.loginMode.id);
             }
         }
 
