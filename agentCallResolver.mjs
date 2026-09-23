@@ -39,7 +39,7 @@ export class AgentCallResolver {
         const vectorContext = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
         const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
 
-        if (isResolvedCall(firstAttempt)) {
+        if (this.isResolvedCall(firstAttempt)) {
             return firstAttempt;
         }
 
@@ -49,7 +49,7 @@ export class AgentCallResolver {
         const fullApiDoc = await agent.getApiDoc();
         const secondAttempt = await this.askForStructuredCall(prompt, fullApiDoc);
 
-        if (isResolvedCall(secondAttempt)) {
+        if (this.isResolvedCall(secondAttempt)) {
             return secondAttempt;
         }
 
