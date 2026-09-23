@@ -84,7 +84,12 @@ export class Sdk {
             }
         }
 
-        const structured = await this.agentCallResolver.resolveAgentCall(agent, prompt);
+        let structured;
+        try {
+            structured = await this.agentCallResolver.resolveAgentCall(agent, prompt);
+        } catch (resolveError) {
+            return await this.agentCallResolver.buildAgentError(prompt, null, resolveError);
+        }
 
         try {
             const agentResponse = await agent.call(structured.httpMethod, structured.path, structured.body ?? null);
@@ -109,12 +114,12 @@ export class Sdk {
 
             const finalMarker = await orchestrator.orchestrate(message, this.messageHistory, onStream);
             const content = this.extractMarkerContent(finalMarker.msg);
-            this.pushMessageHistory({ role: "assistant", content },finalMarker.history);
+            this.pushMessageHistory({ role: "assistant", content }, finalMarker.history);
             return content;
         } catch (e) {
             this.logger.log(e);
             const errText = String(e);
-            if (onStream) onStream("[ERROR:" + errText + "]",null);
+            if (onStream) onStream("[ERROR:" + errText + "]", null);
             this.pushMessageHistory({ role: "assistant", content: errText });
             return errText;
         }
