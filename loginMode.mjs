@@ -46,14 +46,23 @@ export class LoginMode {
         return keys.length > 0 ? keys[0] : null;
     }
 
-    async infer(modelName, messages, onToken = null) {
+    async infer(modelName, messages, onToken = null, apiPath = "/v1/chat/completions") {
         const loggedIn = await this.login();
         if (!loggedIn) {
             throw new Error(`Login failed for mode ${this.id}; cannot run inference`);
         }
 
-        let inferenceUrl = this.host + ":" + this.getDetails().port + "/v1/chat/completions";
-        let payload = JSON.stringify({ model: modelName, messages, temperature: 0.5, top_p: 0.7, stream: true });
+        let inferenceUrl = this.host + ":" + this.getDetails().port + apiPath;
+        let payload = null;
+        if(apiPath == "/v1/systemone") {
+            if(typeof messages == "string") {
+                payload = messages;
+            } else {
+                payload = JSON.stringify(messages);
+            }
+        } else {
+            payload = JSON.stringify({ model: modelName, messages, temperature: 0.5, top_p: 0.7, stream: true });
+        }
 
         const response = await fetch(inferenceUrl, {
             method: "POST",

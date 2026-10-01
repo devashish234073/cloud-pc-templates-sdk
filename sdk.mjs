@@ -2,6 +2,7 @@ import { LoginMode } from "./loginMode.mjs";
 import { Logger } from "./logger.mjs";
 import { VectorDB } from "./vectordb.mjs";
 import { Agents } from "./agents.mjs";
+import { SystemOne } from "./systemone.mjs";
 import { AgentCallResolver } from "./agentCallResolver.mjs";
 import { Orchestrator } from "./orchestrator.mjs";
 
@@ -14,10 +15,12 @@ export class Sdk {
     selectedModel = null;
     vectorDb;
     agents;
+    systemOne;
     host;
     constructor(loginModeId, systemPrompt = null, host = "http://localhost") {
         this.host = host;
         this.loginMode = new LoginMode(host, loginModeId);
+        this.systemOne = new SystemOne(host);
         this.vectorDb = new VectorDB(host);
         this.agents = new Agents(host);
         if (systemPrompt) {
@@ -36,6 +39,10 @@ export class Sdk {
 
     getSelectedModel() {
         return this.selectedModel;
+    }
+
+    getSystemOne() {
+        return this.systemOne;
     }
 
     setSelectedModel(modelName) {
