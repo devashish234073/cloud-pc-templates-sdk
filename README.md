@@ -172,7 +172,12 @@ main();
 
 ## For systemone models there is a SystemOne class which can be used like below
 
-Setup:
+1. Launch a login mode:
+```
+npx cloud-pc-templates ai login loginMode ollamalocal
+```
+
+2. Setup:
  ```
    mkdir new-app
    cd new-app
