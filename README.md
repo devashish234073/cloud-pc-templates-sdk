@@ -212,3 +212,6 @@ main();
 
 Output:
 <img width="1373" height="529" alt="image" src="https://github.com/user-attachments/assets/dc85801d-5c18-45c4-b342-b4cc20058fe4" />
+
+Refer this post for limitations of this mode: https://lnkd.in/p/dM-D3qGh
+Basically it's that at this point ollama doesn't have a any systemone cloud model, so you need ollama installed locally and a systemone model already pulled to use this.
