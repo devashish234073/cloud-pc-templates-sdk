@@ -170,3 +170,44 @@ main();
 
 <img width="1369" height="708" alt="image" src="https://github.com/user-attachments/assets/818ff252-90aa-49de-82bc-1b5c55a1a63b" />
 
+## For systemone models there is a SystemOne class which can be used like below
+
+Setup:
+ ```
+   mkdir new-app
+   cd new-app
+   npm init -y
+   npm install cloud-pc-templates-sdk
+```
+
+File content:
+
+```
+let { Sdk } = require("cloud-pc-templates-sdk");
+async function main() {
+    let sdk = new Sdk("ollamalocal");
+    let systemOne = sdk.getSystemOne();
+    console.log("available models: ",await systemOne.getAvailableSystemOneModels());
+    let questions = {
+        "label": {
+            "type": "choice",
+            "instructions": "Which label fits this ticket?",
+            "criteria": {
+                "billing": "Payments and refunds",
+                "bug": "Software errors",
+                "account": "Login and account access"
+            }
+        }
+    };
+    let response = await systemOne.infer(
+        "tev1:0.8b",
+        "Our checkout has returned 500 errors since 9am.",
+        questions
+    );
+    console.log("model response",response);
+}
+main();
+```
+
+Output:
+

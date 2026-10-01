@@ -13,10 +13,15 @@ export class SystemOne {
         this.checkSystemOneModelAvailability();
     }
 
-    async checkSystemOneModelAvailability() {
+    async getAvailableSystemOneModels() {
         const availableModels = await this.loginMode.listModels();
         const availableModelNames = Object.keys(availableModels ?? {}).map((name) => name.toLowerCase());
-        const hasSupportedModel = availableModelNames.some((modelName) => SYSTEM_ONE_MODELS.includes(modelName));
+        return availableModelNames.filter((modelName) => SYSTEM_ONE_MODELS.includes(modelName));
+    }
+
+    async checkSystemOneModelAvailability() {
+        const availableSystemOneModels = await this.getAvailableSystemOneModels();
+        const hasSupportedModel = availableSystemOneModels.length > 0;
 
         if (!hasSupportedModel) {
             this.logger.warn("no system one mdoel found");
@@ -29,6 +34,9 @@ export class SystemOne {
         const hasSupportedModel = await this.checkSystemOneModelAvailability();
         if (!hasSupportedModel) {
             throw new Error("No supported SystemOne model found. Available models must include one of: " + SYSTEM_ONE_MODELS.join(", "));
+        }
+        if(!SYSTEM_ONE_MODELS.includes(modelName.toLowerCase())) {
+            throw new Error("Invalid SystemOne model name: " + modelName + ". Available models must include one of: " + SYSTEM_ONE_MODELS.join(", "));
         }
         let payload = JSON.stringify(
             {

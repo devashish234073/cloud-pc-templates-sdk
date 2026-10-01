@@ -60,6 +60,7 @@ export class LoginMode {
             } else {
                 payload = JSON.stringify(messages);
             }
+            return this.inferSystemOne(inferenceUrl, modelName, messages);
         } else {
             payload = JSON.stringify({ model: modelName, messages, temperature: 0.5, top_p: 0.7, stream: true });
         }
@@ -113,6 +114,28 @@ export class LoginMode {
         }
 
         return fullText;
+    }
+
+    async inferSystemOne(url, modelName, request) {
+        const body = typeof request === "string" ? JSON.parse(request) : { ...request };
+        if (!body.model) body.model = modelName; // your curl sends "model"; don't rely on the caller
+
+        const response = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+        });
+
+        const text = await response.text();
+        if (!response.ok) {
+            throw new Error(`SystemOne request failed: HTTP ${response.status} ${text}`);
+        }
+
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            throw new Error(`SystemOne returned non-JSON response: ${text.slice(0, 200)}`);
+        }
     }
 
     async login() {
