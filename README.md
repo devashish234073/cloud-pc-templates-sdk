@@ -182,7 +182,7 @@ Setup:
 
 File content:
 
-```
+```javascript
 let { Sdk } = require("cloud-pc-templates-sdk");
 async function main() {
     let sdk = new Sdk("ollamalocal");
@@ -211,4 +211,4 @@ main();
 ```
 
 Output:
-
+<img width="1373" height="529" alt="image" src="https://github.com/user-attachments/assets/dc85801d-5c18-45c4-b342-b4cc20058fe4" />
