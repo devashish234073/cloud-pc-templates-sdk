@@ -205,6 +205,7 @@ async function main() {
         questions
     );
     console.log("model response",response);
+    console.log("probabilities",response?.answers?.label?.probabilities);
 }
 main();
 ```
