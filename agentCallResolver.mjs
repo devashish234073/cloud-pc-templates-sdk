@@ -12,6 +12,43 @@ export class AgentCallResolver {
     }
 
     async askForStructuredCall(prompt, apiContext) {
+        const viaSystemOne = await this.askForStructuredCallUsingSystemOne(prompt, apiContext);
+        if (viaSystemOne) {
+            return viaSystemOne;
+        }
+        return await this.askForStructuredCallUsingLlm(prompt, apiContext);
+    }
+
+    async askForStructuredCallUsingSystemOne(prompt, apiContext) {
+        const state = "API context:\n" + apiContext + "\n\nUser request:\n" + prompt;
+        const questions = {
+            resolvable: {
+                type: "choice",
+                instructions: "Does the API context contain enough information to determine the exact HTTP call for the user request?",
+                criteria: {
+                    yes: "The call can be fully determined from the context",
+                    no: "Required information is missing"
+                }
+            },
+            httpMethod: {
+                type: "choice",
+                instructions: "Which HTTP method does the user request need?",
+                criteria: {
+                    GET: "Read data",
+                    POST: "Create data or trigger an action",
+                    PUT: "Replace data",
+                    PATCH: "Partially update data",
+                    DELETE: "Remove data"
+                }
+            }
+        };
+
+        const answers = await this.sdk.getSystemOne().inferUsingTopPrioritySystemOneModel(state, questions);
+        if (!answers) return null;
+        return { resolvable: answers.resolvable.choice, httpMethod: answers.httpMethod.choice };
+    }
+
+    async askForStructuredCallUsingLlm(prompt, apiContext) {
         const systemPrompt =
             "You are an API call resolver for an internal agent SDK.\n" +
             "Given API documentation/context and a user request, determine the exact HTTP call needed.\n" +
@@ -34,18 +71,36 @@ export class AgentCallResolver {
         return x && typeof x === "object" && typeof x.httpMethod === "string" && typeof x.path === "string";
     }
 
-    async resolveAgentCall(agent, prompt) {
-        // Attempt 1: narrow vectorDB context
-        const vectorContext = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
-        const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
+    // Returns a non-empty string, or null if the vector DB is down/empty.
+    async getVectorContext(agent, prompt) {
+        try {
+            const context = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
+            if (typeof context === "string" && context.trim().length > 0) {
+                return context;
+            }
+            this.logger.warn(`Vector DB returned no context for agent ${agent.getId()}`);
+        } catch (e) {
+            this.logger.warn(`Vector DB lookup failed for agent ${agent.getId()}: ${e}`);
+        }
+        return null;
+    }
 
-        if (this.isResolvedCall(firstAttempt)) {
-            return firstAttempt;
+    async resolveAgentCall(agent, prompt) {
+        // Attempt 1: narrow vectorDB context (skipped if vector DB is unavailable)
+        const vectorContext = await this.getVectorContext(agent, prompt);
+
+        if (vectorContext) {
+            const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
+            if (this.isResolvedCall(firstAttempt)) {
+                return firstAttempt;
+            }
+            const reason = (firstAttempt && firstAttempt.warning) || "resolver returned an unusable response";
+            this.logger.warn(`Attempt 1 unusable for agent ${agent.getId()} ("${reason}"), retrying with full API doc.`);
+        } else {
+            this.logger.warn(`Skipping vector context for agent ${agent.getId()}, using full API doc directly.`);
         }
 
-        const reason = (firstAttempt && firstAttempt.warning) || "resolver returned an unusable response";
-        this.logger.warn(`Attempt 1 unusable for agent ${agent.getId()} ("${reason}"), retrying with full API doc.`);
-
+        // Attempt 2: full API doc
         const fullApiDoc = await agent.getApiDoc();
         const secondAttempt = await this.askForStructuredCall(prompt, fullApiDoc);
 
