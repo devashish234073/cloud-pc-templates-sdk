@@ -75,8 +75,8 @@ export class AgentCallResolver {
     async getVectorContext(agent, prompt) {
         try {
             const context = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
-            if (typeof context === "string" && context.trim().length > 0) {
-                return context;
+            if (context.length > 0 && typeof context[0] === "string" && context[0].trim().length > 0) {
+                return context[0];
             }
             this.logger.warn(`Vector DB returned no context for agent ${agent.getId()}`);
         } catch (e) {
