@@ -6,6 +6,7 @@ const SYSTEM_ONE_MODELS = ["nimble", "tev1", "tev1:1.4b", "tev1:0.8b"];
 const FAILURE_THRESHOLD = 3;
 const COOLDOWN_MS = 60 * 60 * 1000;
 const REQUEST_TIMEOUT_MS = 15 * 1000;
+const SYSTEM_ONE_MAX_STATE_CHARS = 5000;
 
 export class SystemOne {
     logger = new Logger("SystemOne");
@@ -102,6 +103,11 @@ export class SystemOne {
     // Never throws. Returns `answers` on success, null if unavailable/failed (caller falls back).
     // All questions must be type "choice".
     async inferUsingTopPrioritySystemOneModel(state, questions) {
+        if (state.length > SYSTEM_ONE_MAX_STATE_CHARS) {
+            this.logger.debug("Context too large for SystemOne (" + state.length + " chars), skipping.. [" + state.substring(0, 100) + "...]");
+            return null;
+        }
+
         if (!this.isAvailable()) {
             return null;
         }
