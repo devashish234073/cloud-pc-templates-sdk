@@ -12,10 +12,11 @@ export class AgentCallResolver {
     }
 
     async askForStructuredCall(prompt, apiContext) {
-        const viaSystemOne = await this.askForStructuredCallUsingSystemOne(prompt, apiContext);
+        //commented systemone call as it can only return choices and can't return dynamica values like path.
+        /*const viaSystemOne = await this.askForStructuredCallUsingSystemOne(prompt, apiContext);
         if (viaSystemOne) {
             return viaSystemOne;
-        }
+        }*/
         return await this.askForStructuredCallUsingLlm(prompt, apiContext);
     }
 
@@ -93,6 +94,7 @@ export class AgentCallResolver {
         if (vectorContext) {
             const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
             if (this.isResolvedCall(firstAttempt)) {
+                this.logger.info(`Agent ${agent.getId()} resolved call using vector DB context: ${JSON.stringify(firstAttempt)}`);
                 return firstAttempt;
             }
             const reason = (firstAttempt && firstAttempt.warning) || "resolver returned an unusable response";
