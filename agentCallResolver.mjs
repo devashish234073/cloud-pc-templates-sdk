@@ -74,8 +74,9 @@ export class AgentCallResolver {
     // Returns a non-empty string, or null if the vector DB is down/empty.
     async getVectorContext(agent, prompt) {
         try {
-            const context = await this.sdk.getVectorDbApiDocSuggestion(prompt, agent.getId(), "text");
+            const context = await this.sdk.getVectorDbApiDocSuggestion(prompt, "text");
             if (context.length > 0 && typeof context[0] === "string" && context[0].trim().length > 0) {
+                this.logger.debug(`Vector DB returned context for agent ${agent.getId()}: ${context[0].substring(0, 200)}...`);
                 return context[0];
             }
             this.logger.warn(`Vector DB returned no context for agent ${agent.getId()}`);
