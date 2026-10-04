@@ -7,6 +7,9 @@ export class Logger {
     log(message) {
         console.log(`[${this.className}] ${new Date()} [INFO] ${message}`);
     }
+    info(message) {
+        console.log(`[${this.className}] ${new Date()} [INFO] ${message}`);
+    }
     warn(message) {
         console.warn(`[${this.className}] ${new Date()} [WARN] ${message}`);
     }
