@@ -11,13 +11,13 @@ export class AgentCallResolver {
         this.loginMode = loginMode;
     }
 
-    async askForStructuredCall(prompt, apiContext) {
+    async askForStructuredCall(prompt, apiContext, history = []) {
         //commented systemone call as it can only return choices and can't return dynamica values like path.
         /*const viaSystemOne = await this.askForStructuredCallUsingSystemOne(prompt, apiContext);
         if (viaSystemOne) {
             return viaSystemOne;
         }*/
-        return await this.askForStructuredCallUsingLlm(prompt, apiContext);
+        return await this.askForStructuredCallUsingLlm(prompt, apiContext, history);
     }
 
     async askForStructuredCallUsingSystemOne(prompt, apiContext) {
@@ -49,7 +49,7 @@ export class AgentCallResolver {
         return { resolvable: answers.resolvable.choice, httpMethod: answers.httpMethod.choice };
     }
 
-    async askForStructuredCallUsingLlm(prompt, apiContext) {
+    async askForStructuredCallUsingLlm(prompt, apiContext, history = []) {
         const systemPrompt =
             "You are an API call resolver for an internal agent SDK.\n" +
             "Given API documentation/context and a user request, determine the exact HTTP call needed.\n" +
@@ -61,6 +61,7 @@ export class AgentCallResolver {
 
         const messages = [
             { role: "system", content: systemPrompt },
+            ...(history.length > 0 ? history.slice(-1) : []),
             { role: "user", content: "API context:\n" + apiContext + "\n\nUser request:\n" + prompt }
         ];
 
@@ -87,12 +88,11 @@ export class AgentCallResolver {
         return null;
     }
 
-    async resolveAgentCall(agent, prompt) {
+    async resolveAgentCall(agent, prompt, history = []) {
         // Attempt 1: narrow vectorDB context (skipped if vector DB is unavailable)
         const vectorContext = await this.getVectorContext(agent, prompt);
-
         if (vectorContext) {
-            const firstAttempt = await this.askForStructuredCall(prompt, vectorContext);
+            const firstAttempt = await this.askForStructuredCall(prompt, vectorContext, history);
             if (this.isResolvedCall(firstAttempt)) {
                 this.logger.info(`Agent ${agent.getId()} resolved call using vector DB context: ${JSON.stringify(firstAttempt)}`);
                 return firstAttempt;
@@ -105,7 +105,7 @@ export class AgentCallResolver {
 
         // Attempt 2: full API doc
         const fullApiDoc = await agent.getApiDoc();
-        const secondAttempt = await this.askForStructuredCall(prompt, fullApiDoc);
+        const secondAttempt = await this.askForStructuredCall(prompt, fullApiDoc, history);
 
         if (this.isResolvedCall(secondAttempt)) {
             return secondAttempt;

@@ -78,7 +78,7 @@ export class Sdk {
         }
     }
 
-    async callAgent(agentId, prompt) {
+    async callAgent(agentId, prompt, history = []) {
         const agent = this.getAgentById(agentId);
         if (!agent) {
             throw new Error("Agent not found");
@@ -102,7 +102,7 @@ export class Sdk {
 
         let structured;
         try {
-            structured = await this.agentCallResolver.resolveAgentCall(agent, prompt);
+            structured = await this.agentCallResolver.resolveAgentCall(agent, prompt, history);
         } catch (resolveError) {
             return await this.agentCallResolver.buildAgentError(prompt, null, resolveError);
         }
