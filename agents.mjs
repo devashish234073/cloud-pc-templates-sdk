@@ -202,6 +202,28 @@ class Agent {
         }
     }
 
+    async loginAndCheckVersion() {
+        let healthUrl = this.host + ":" + this.getDetails().port + "/health";
+        try {
+            const response = await fetch(healthUrl);
+
+            if (response.status !== 200) {
+                return {"up":false,"version":null,"isLatest":false};
+            }
+
+            const data = await response.json();
+
+            if (data.status === "UP") {
+                return {"up":true,"version":data.version,"isLatest":registryMap[this.id].currentVersion === data.version};
+            }
+
+            return {"up":false,"version":null,"isLatest":false};
+        } catch (error) {
+            this.logger.error("Error during health check: ", error);
+            return {"up":false,"version":null,"isLatest":false};
+        }
+    }
+
     async getApiDoc() {
         let apiDocUrl = this.host + ":" + this.getDetails().port + "/apidoc";
         try {
