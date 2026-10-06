@@ -13,26 +13,31 @@ export class VectorDB {
         }
 
         const metadata = item.metadata;
-        const metadataSummary = Object.entries(metadata).reduce((acc, [key, value]) => {
-            acc[key] = value;
+        const allowedKeys = ["agentId", "endpointMethod", "endpointPath"];
+        const metadataSummary = allowedKeys.reduce((acc, key) => {
+            if (Object.prototype.hasOwnProperty.call(metadata, key)) {
+                acc[key] = metadata[key];
+            }
             return acc;
         }, {});
+
         const metadataLine = `Metadata: ${JSON.stringify(metadataSummary)}`;
 
         if (!attribute) {
             return metadataLine;
         }
 
-        if (!Object.prototype.hasOwnProperty.call(metadata, attribute)) {
+        const normalizedAttribute = String(attribute);
+        if (!Object.prototype.hasOwnProperty.call(metadata, normalizedAttribute)) {
             return metadataLine;
         }
 
-        const attributeValue = metadata[attribute];
+        const attributeValue = metadata[normalizedAttribute];
         const formattedValue = typeof attributeValue === "string"
             ? attributeValue
             : JSON.stringify(attributeValue, null, 2);
 
-        return `${metadataLine}\n${attribute}: ${formattedValue}`;
+        return `${metadataLine}\n${normalizedAttribute}: ${formattedValue}`;
     }
 
     async getSuggestion(prompt, attribute = null) {
