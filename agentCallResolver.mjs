@@ -61,7 +61,7 @@ export class AgentCallResolver {
 
         const messages = [
             { role: "system", content: systemPrompt },
-            ...(history.length > 0 ? history.slice(-1) : []),
+            ...(history.length > 0 ? history : []),
             { role: "user", content: "API context:\n" + apiContext + "\n\nUser request:\n" + prompt }
         ];
 
@@ -86,6 +86,37 @@ export class AgentCallResolver {
             this.logger.warn(`Vector DB lookup failed for agent ${agent.getId()}: ${e}`);
         }
         return null;
+    }
+
+    async isContextRelevant(agent, prompt, context) {
+        const state =
+            "Target agent: " + agent.getId() + "\n" +
+            (agent.getDescription ? "Agent description: " + agent.getDescription() + "\n" : "") +
+            "\nRetrieved API documentation:\n" + context.substring(0, 2000) +
+            "\n\nUser request:\n" + prompt;
+
+        const questions = {
+            relevant: {
+                type: "choice",
+                instructions:
+                    "Does the retrieved API documentation describe an endpoint of the target agent " +
+                    "that can fulfil the user request? Answer no if the documentation belongs to a " +
+                    "different system or domain than the request.",
+                criteria: {
+                    yes: "Documentation matches the target agent and the requested operation",
+                    no: "Documentation is for a different system/domain or unrelated to the request"
+                }
+            }
+        };
+
+        try {
+            const answers = await this.sdk.getSystemOne().inferUsingTopPrioritySystemOneModel(state, questions);
+            if (!answers) return true; // gate unavailable -> keep current behavior
+            return answers.relevant.choice === "yes";
+        } catch (e) {
+            this.logger.warn(`Relevance gate failed for agent ${agent.getId()}: ${e}`);
+            return true;
+        }
     }
 
     async resolveAgentCall(agent, prompt, history = []) {
