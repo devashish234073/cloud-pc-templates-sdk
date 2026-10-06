@@ -7,6 +7,34 @@ export class VectorDB {
     constructor(host = "http://localhost") {
         this.host = host;
     }
+    formatSuggestionEntry(item, attribute = null) {
+        if (!item || !item.metadata || typeof item.metadata !== "object") {
+            return null;
+        }
+
+        const metadata = item.metadata;
+        const metadataSummary = Object.entries(metadata).reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+        const metadataLine = `Metadata: ${JSON.stringify(metadataSummary)}`;
+
+        if (!attribute) {
+            return metadataLine;
+        }
+
+        if (!Object.prototype.hasOwnProperty.call(metadata, attribute)) {
+            return metadataLine;
+        }
+
+        const attributeValue = metadata[attribute];
+        const formattedValue = typeof attributeValue === "string"
+            ? attributeValue
+            : JSON.stringify(attributeValue, null, 2);
+
+        return `${metadataLine}\n${attribute}: ${formattedValue}`;
+    }
+
     async getSuggestion(prompt, attribute = null) {
         let response = await this.getSuggestionRaw(prompt);
 
@@ -16,17 +44,17 @@ export class VectorDB {
         if (!response.results || !Array.isArray(response.results)) {
             this.logger.error("Invalid response from vector DB: ", response);
             return null;
-        } else {
-            let suggestions = [];
-            response.results.forEach((item, index) => {
-                if (!attribute || !item.metadata.hasOwnProperty(attribute)) {
-                    suggestions.push(item.metadata);
-                } else {
-                    suggestions.push(item.metadata[attribute]);
-                }
-            });
-            return suggestions;
         }
+
+        const rankedResults = [...response.results].sort((left, right) => {
+            const leftScore = Number.isFinite(left?.score) ? left.score : 0;
+            const rightScore = Number.isFinite(right?.score) ? right.score : 0;
+            return rightScore - leftScore;
+        });
+
+        return rankedResults
+            .map((item) => this.formatSuggestionEntry(item, attribute))
+            .filter(Boolean);
     }
     async getSuggestionRaw(prompt) {
         let vectorSuggestionUrl = this.host + ":" + this.PORT + "/query";
