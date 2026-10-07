@@ -7,6 +7,26 @@ export class VectorDB {
     constructor(host = "http://localhost") {
         this.host = host;
     }
+
+    async healthcheck() {
+        const baseUrl = `${this.host}:${this.PORT}`;
+        const healthUrl = `${baseUrl}/health`;
+
+        try {
+            const response = await fetch(healthUrl);
+            const raw = await response.text();
+
+            try {
+                return { status: response.status, body: JSON.parse(raw || "{}") };
+            } catch (error) {
+                return { status: response.status, body: raw || "" };
+            }
+        } catch (error) {
+            this.logger.error("Error during vector DB health check: ", error);
+            return { status: 0, body: null };
+        }
+    }
+
     formatSuggestionEntry(item, attribute = null) {
         if (!item || !item.metadata || typeof item.metadata !== "object") {
             return null;
