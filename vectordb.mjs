@@ -66,12 +66,19 @@ export class VectorDB {
         if (!response) {
             return null;
         }
+
         if (!response.results || !Array.isArray(response.results)) {
             this.logger.error("Invalid response from vector DB: ", response);
             return null;
         }
 
-        const rankedResults = [...response.results].sort((left, right) => {
+        // Only consider endpoint chunks.
+        // Overview chunks can rank highly but do not contain the actual endpoint information.
+        const endpointResults = response.results.filter(
+            (item) => item?.metadata?.chunkKind === "endpoint"
+        );
+
+        const rankedResults = [...endpointResults].sort((left, right) => {
             const leftScore = Number.isFinite(left?.score) ? left.score : 0;
             const rightScore = Number.isFinite(right?.score) ? right.score : 0;
             return rightScore - leftScore;
@@ -81,6 +88,7 @@ export class VectorDB {
             .map((item) => this.formatSuggestionEntry(item, attribute))
             .filter(Boolean);
     }
+
     async getSuggestionRaw(prompt) {
         let vectorSuggestionUrl = this.host + ":" + this.PORT + "/query";
         let payload = JSON.stringify({ prompt, topK: 3 });
