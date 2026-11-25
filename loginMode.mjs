@@ -76,6 +76,7 @@ export class LoginMode {
         }
 
         let fullText = "";
+        let reasoningText = "";
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = "";
@@ -100,6 +101,9 @@ export class LoginMode {
                     const delta = parsed.choices?.[0]?.delta?.content;
                     if (delta) {
                         fullText += delta;
+                        if(parsed.choices?.[0]?.delta?.reasoning_content) {
+                            reasoningText += parsed.choices[0].delta.reasoning_content;
+                        }
                         if (onToken) onToken(delta);
                     }
                 } catch (e) {
@@ -113,7 +117,7 @@ export class LoginMode {
             throw new Error(`Ollama error: ${ollamaErrorMatch[1].trim()}`);
         }
 
-        return fullText;
+        return {fullText, reasoningText};
     }
 
     async inferSystemOne(url, modelName, request) {

@@ -64,8 +64,8 @@ export class Orchestrator {
             }
         ];
         this.logger.debug("Orchestrator messages: ", messages);
-        const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
-        return safeParseJson(response);
+        let {fullText, reasoningText} = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+        return safeParseJson(fullText || reasoningText);
     }
 
     async orchestrate(originalPrompt, sdkHistory, onStream = null) {

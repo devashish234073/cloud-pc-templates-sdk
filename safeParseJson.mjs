@@ -27,14 +27,27 @@ export function safeParseJson(text) {
     let cleaned = text.trim()
         .replace(/^```json\s*/i, "")
         .replace(/^```\s*/, "")
-        .replace(/```\s*$/, "");
+        .replace(/```\s*$/, "")
+        .trim();
 
-    try { return JSON.parse(cleaned); } catch (e) {}
+    let candidate = cleaned;
 
-    const extracted = extractBalancedJson(cleaned);
+    // Trim surrounding prose unless the response already starts with { and ends with }.
+    if (!(candidate.startsWith("{") && candidate.endsWith("}"))) {
+        const firstBrace = candidate.indexOf("{");
+        const lastBrace = candidate.lastIndexOf("}");
+
+        if (firstBrace !== -1 && lastBrace > firstBrace) {
+            candidate = candidate.slice(firstBrace, lastBrace + 1);
+        }
+    }
+
+    try { return JSON.parse(candidate); } catch (e) {}
+
+    const extracted = extractBalancedJson(candidate);
     if (extracted) { try { return JSON.parse(extracted); } catch (e) {} }
 
-    try { return JSON.parse(jsonrepair(extracted || cleaned)); } catch (e) {
+    try { return JSON.parse(jsonrepair(extracted || candidate)); } catch (e) {
         throw new Error("Failed to parse structured JSON from model response: " + text);
     }
 }

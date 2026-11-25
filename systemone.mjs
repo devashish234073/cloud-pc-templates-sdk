@@ -57,7 +57,8 @@ export class SystemOne {
                 "questions": questions
             }
         );
-        return await this.loginMode.infer(modelName, payload, null, "/v1/systemone");
+        let {fullText, reasoningText} = await this.loginMode.infer(modelName, payload, null, "/v1/systemone");
+        return fullText || reasoningText;
     }
 
     isAvailable() {

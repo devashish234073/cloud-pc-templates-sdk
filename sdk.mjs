@@ -162,10 +162,10 @@ export class Sdk {
                     throw new Error("No model selected and no available models for login mode " + this.loginMode.id + ". Please use one of the npx command from loginMode card to login and select a model.");
                 }
             }
-            let response = await this.loginMode.infer(this.selectedModel, this.messageHistory, onStream);
+            let {fullText, reasoningText} = await this.loginMode.infer(this.selectedModel, this.messageHistory, onStream);
             if (onStream) onStream(null);
-            this.pushMessageHistory({ role: "assistant", content: response });
-            return response;
+            this.pushMessageHistory({ role: "assistant", content: fullText || reasoningText });
+            return fullText || reasoningText;
         } catch (e) {
             this.logger.log(e);
             this.pushMessageHistory({ role: "assistant", content: String(e) });

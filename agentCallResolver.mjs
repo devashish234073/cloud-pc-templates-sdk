@@ -65,8 +65,8 @@ export class AgentCallResolver {
             { role: "user", content: "API context:\n" + apiContext + "\n\nUser request:\n" + prompt }
         ];
 
-        const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
-        return safeParseJson(response);
+        let {fullText, reasoningText} = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+        return safeParseJson(fullText || reasoningText);
     }
 
     isResolvedCall(x) {
@@ -167,8 +167,8 @@ export class AgentCallResolver {
         ];
 
         try {
-            const response = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
-            const parsed = safeParseJson(response);
+            let {fullText, reasoningText} = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+            const parsed = safeParseJson(fullText || reasoningText);
             if (parsed && typeof parsed.errorMessage === "string" && typeof parsed.retryable === "boolean") {
                 return parsed;
             }
@@ -194,6 +194,7 @@ export class AgentCallResolver {
             { role: "user", content: prompt }
         ];
 
-        return await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+        let {fullText, reasoningText} = await this.loginMode.infer(this.sdk.getSelectedModel(), messages, null);
+        return fullText || reasoningText;
     }
 }
